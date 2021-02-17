@@ -30,27 +30,33 @@ var max=(a,b)=>{if(a<b)return b;else return a;}
 // logic function part
 var download=function download() {
     console.log("download");
-    var rel=document.getElementById("tlnav").querySelector("li.active").firstChild.getAttribute("rel");
-    //烦死了，选中哪个生成哪个吧
-    var t1=document.querySelector("h1>span.albumtitle[lang=ja]");//OK
-    if(t1.firstChild.nodeName=="EM")t1.removeChild(t1.firstChild);//??????????
+    var rel=document.getElementById("tlnav").querySelector("li.active").firstChild.getAttribute("rel");//烦死了，选中哪个生成哪个吧
+    //var t1=document.querySelector("h1>span.albumtitle[lang=ja]");//OK
+    var t1=document.querySelector("h1>span.albumtitle[lang=ja]").getElementsByTagName("#text");//to be test
+    //if(t1.firstChild.nodeName=="EM")t1.removeChild(t1.firstChild);//??????????
     title=t1.innerText;
-    var cata=document.querySelectorAll("#album_infobit_large")[0].firstChild; // Does not work if `catalog` field does not exist, but I'm lazy~~~
+    var cata=document.querySelectorAll("#album_infobit_large")[0].firstChild; // Does not work if `catalog` field does not exist, todo
 
     //who is SB?????? why `querySelectorAll("#album_infobit_large")[1]`??? the `id` is not unique!!!
-    var performer=document.querySelectorAll("#album_infobit_large")[1].querySelectorAll("span[title=Performer]")[0].parentElement.parentElement.parentElement.nextElementSibling.innerText;// HOORAY!
+    var performer=document.querySelectorAll("#album_infobit_large")[1].querySelectorAll("span[title=Performer]")[0].parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
 
-    var root=document.getElementById(rel);
-    var totalset=root.querySelectorAll("span>span.time")
+    var root=document.getElementById(rel);//span,display:inline
+    var totalset=root.querySelectorAll("span>span.time")//playtime set
     var id=window.location.href.split("/")[4]; // I'm lazy~~~
-
-    for (var i=0;i<max(totalset.length-2,1);i++) {
-        var totaltime=totalset[i].innerHTML;//:divided string
-        let result=`REM vgmdb ${id}
+    var tables=root.getElementsByTagName("table");//table of disc list, exclude [0]
+    console.log(tables[1])
+    for(var i=1;i<tables.length;i++) {//repeat disc
+        var totaltime=totalset[i-1].innerHTML;// : divided string
+        var result=`REM vgmdb ${id}
+REM ${cata}
 TITLE "${title}"
 PERFORMER "${performer}"
 FILE "fill in by yourself" WAVE
 `
+        var nownode=tables[i];
+        for(var j=0;j<nownode.length;j++){//discs
+            
+        }
         createObject(result,i+1);
     }
 }
