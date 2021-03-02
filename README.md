@@ -6,7 +6,14 @@ JS script to download CUE file (cue sheet) from [vgmdb](https://vgmdb.net/).
 Usage
 ---
 The script will add a `create CUE` button next to the RSS feed button.
-Click and have bug.
+Click and **have bugs**.
+
+Notice
+---
+- The language of CUE content (Japanese/Romaji/English) depends on which `tracklist` tab you have selected.
+- VGMDB only provides track time information as second. Therefore the microsecond part will always be `00`.
+- VGMDB track info doesn't contain performer of a specific track, so you may need to edit manually.
+- The filename of audio should be input manually.
 
 Dependency
 ---

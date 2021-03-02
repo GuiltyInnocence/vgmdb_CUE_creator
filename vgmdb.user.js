@@ -20,48 +20,57 @@ bat.href="javascript:void(0)";
 bat.onclick=function(){download();}//ok it works
 bat.innerHTML=" create CUE";
 pos.appendChild(bat);
-console.log(bat);
+//console.log(bat);
 // button created
 
-var title="";
-
-var max=(a,b)=>{if(a<b)return b;else return a;}
-
-// logic function part
+var min=0,sec=0;
+function theWorld(nu){if(nu<10)return `0${nu}`;else return nu;}
+var t1="";
 var download=function download() {
-    console.log("download");
-    var rel=document.getElementById("tlnav").querySelector("li.active").firstChild.getAttribute("rel");//烦死了，选中哪个生成哪个吧
+    console.log("Now download CUE...");
+    try {
+        var rel=document.getElementById("tlnav").querySelector("li.active").firstChild.getAttribute("rel");//烦死了，选中哪个生成哪个吧
+    } catch (error) {
+        alert("There is no tracklist!")
+    }
     //var t1=document.querySelector("h1>span.albumtitle[lang=ja]");//OK
-    var t1=document.querySelector("h1>span.albumtitle[lang=ja]").getElementsByTagName("#text");//to be test
-    //if(t1.firstChild.nodeName=="EM")t1.removeChild(t1.firstChild);//??????????
-    title=t1.innerText;
-    var cata=document.querySelectorAll("#album_infobit_large")[0].firstChild; // Does not work if `catalog` field does not exist, todo
-
+    t1=document.querySelector("h1>span.albumtitle[lang=ja]").childNodes[1].nodeValue;//to be test
+    var cata=document.querySelector("#album_infobit_large").getElementsByTagName("td")[1].innerText; // Does not work if `catalog` field does not exist or is not the first child, todo!!!
     //who is SB?????? why `querySelectorAll("#album_infobit_large")[1]`??? the `id` is not unique!!!
-    var performer=document.querySelectorAll("#album_infobit_large")[1].querySelectorAll("span[title=Performer]")[0].parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
-
+    var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Performer]").parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
     var root=document.getElementById(rel);//span,display:inline
-    var totalset=root.querySelectorAll("span>span.time")//playtime set
+    var totalset=root.querySelectorAll("span>span.time");//playtime set
     var id=window.location.href.split("/")[4]; // I'm lazy~~~
     var tables=root.getElementsByTagName("table");//table of disc list, exclude [0]
-    console.log(tables[1])
+    // console.log(tables[1]);
     for(var i=1;i<tables.length;i++) {//repeat disc
-        var totaltime=totalset[i-1].innerHTML;// : divided string
+        var totaltime=totalset[i-1].innerText;// : divided string
+        min=0;sec=0;
         var result=`REM vgmdb ${id}
-REM ${cata}
-TITLE "${title}"
+REM CATALOG ${cata}
 PERFORMER "${performer}"
+TITLE "${t1}"
 FILE "fill in by yourself" WAVE
 `
-        var nownode=tables[i];
-        for(var j=0;j<nownode.length;j++){//discs
-            
+        var trs=tables[i].getElementsByTagName("tr");
+        for(var j=0;j<trs.length;j++){//discs
+            var tds=trs[j].getElementsByTagName("td");
+            if(sec>60){sec-=60;min+=1;}
+            result+=`  TRACK ${tds[0].innerText} AUDIO
+    TITLE "${tds[1].innerText}"
+    PERFORMER "${performer}"
+    INDEX 01 ${theWorld(min)}:${theWorld(sec)}:00
+`
+            min+=Number(tds[2].innerText.split(":")[0]);
+            // console.log(tds[2].innerText.split(":")[0]);
+            sec+=Number(tds[2].innerText.split(":")[1]);
         }
-        createObject(result,i+1);
+        createObject(result,i);
+        // console.log(result);
     }
 }
 function createObject (content,noid) {
-    var file = new File([content], `${title}_DISC${noid}.cue`, { type: "text/plain;charset=utf-8" });
+    var file = new File([content], `${t1}_DISC${noid}.cue`, { type: "text/plain;charset=utf-8" });
     saveAs(file);
 }
 
