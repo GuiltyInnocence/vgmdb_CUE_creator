@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         vgmdb
+// @name         vgmdb_CUE_creator
 // @version      0.0.1
 // @description  vgmdb CUE creator
 // @author       guiltyinnocence
@@ -20,7 +20,6 @@ bat.href="javascript:void(0)";
 bat.onclick=function(){download();}//ok it works
 bat.innerHTML=" create CUE";
 pos.appendChild(bat);
-//console.log(bat);
 // button created
 
 var min=0,sec=0;
@@ -31,23 +30,23 @@ var download=function download() {
     try {
         var rel=document.getElementById("tlnav").querySelector("li.active").firstChild.getAttribute("rel");//烦死了，选中哪个生成哪个吧
     } catch (error) {
-        alert("There is no tracklist!")
+        alert("There is no tracklist!");
+        return;
     }
-    //var t1=document.querySelector("h1>span.albumtitle[lang=ja]");//OK
-    t1=document.querySelector("h1>span.albumtitle[lang=ja]").childNodes[1].nodeValue;//to be test
-    var cata=document.querySelector("#album_infobit_large").getElementsByTagName("td")[1].innerText; // Does not work if `catalog` field does not exist or is not the first child, todo!!!
-    //who is SB?????? why `querySelectorAll("#album_infobit_large")[1]`??? the `id` is not unique!!!
-    var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Performer]").parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
+    t1=document.querySelector("h1>span.albumtitle[lang=ja]").childNodes[1].nodeValue;
+    var cata=document.querySelector("#album_infobit_large").getElementsByTagName("td")[1].innerText;//who is SB?????? why `querySelectorAll("#album_infobit_large")[1]`??? the `id` is not unique!!!
+    try {
+        var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Performer]").parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
+    } catch (error) {
+        var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Vocals]").parentElement.parentElement.parentElement.nextElementSibling.innerText;
+    }
     var root=document.getElementById(rel);//span,display:inline
-    var totalset=root.querySelectorAll("span>span.time");//playtime set
     var id=window.location.href.split("/")[4]; // I'm lazy~~~
     var tables=root.getElementsByTagName("table");//table of disc list, exclude [0]
-    // console.log(tables[1]);
     for(var i=1;i<tables.length;i++) {//repeat disc
-        var totaltime=totalset[i-1].innerText;// : divided string
         min=0;sec=0;
         var result=`REM vgmdb ${id}
-REM CATALOG ${cata}
+REM CATALOG ${(function(){if(cata==undefined)return "N/A";else return cata;})()}
 PERFORMER "${performer}"
 TITLE "${t1}"
 FILE "fill in by yourself" WAVE
@@ -62,12 +61,11 @@ FILE "fill in by yourself" WAVE
     INDEX 01 ${theWorld(min)}:${theWorld(sec)}:00
 `
             min+=Number(tds[2].innerText.split(":")[0]);
-            // console.log(tds[2].innerText.split(":")[0]);
             sec+=Number(tds[2].innerText.split(":")[1]);
         }
         createObject(result,i);
-        // console.log(result);
     }
+    return;
 }
 function createObject (content,noid) {
     var file = new File([content], `${t1}_DISC${noid}.cue`, { type: "text/plain;charset=utf-8" });
