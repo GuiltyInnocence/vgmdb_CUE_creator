@@ -24,6 +24,7 @@ pos.appendChild(bat);
 
 var min=0,sec=0;
 function theWorld(nu){if(nu<10)return `0${nu}`;else return nu;}
+function totext(nu){if(nu.innerText=="")return "0:00";else return nu.innerText;}
 var t1="";
 var download=function download() {
     console.log("Now download CUE...");
@@ -38,7 +39,11 @@ var download=function download() {
     try {
         var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Performer]").parentElement.parentElement.parentElement.nextElementSibling.innerText;// ??????
     } catch (error) {
-        var performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Vocals]").parentElement.parentElement.parentElement.nextElementSibling.innerText;
+        try {
+            performer=document.querySelectorAll("#album_infobit_large")[1].querySelector("span[title=Vocals]").parentElement.parentElement.parentElement.nextElementSibling.innerText;
+        } catch (error) {
+            performer="to be filled manually";
+        }
     }
     var root=document.getElementById(rel);//span,display:inline
     var id=window.location.href.split("/")[4]; // I'm lazy~~~
@@ -46,7 +51,7 @@ var download=function download() {
     for(var i=1;i<tables.length;i++) {//repeat disc
         min=0;sec=0;
         var result=`REM vgmdb ${id}
-REM CATALOG ${(function(){if(cata==undefined)return "N/A";else return cata;})()}
+REM CATALOG ${(function(){if(cata===undefined)return "N/A";else return cata;})()}
 PERFORMER "${performer}"
 TITLE "${t1}"
 FILE "fill in by yourself" WAVE
@@ -55,17 +60,17 @@ FILE "fill in by yourself" WAVE
         for(var j=0;j<trs.length;j++){//discs
             var tds=trs[j].getElementsByTagName("td");
             if(sec>60){sec-=60;min+=1;}
+            if(tds[0].innerText=="")continue;//labels like `A-side`
             result+=`  TRACK ${tds[0].innerText} AUDIO
     TITLE "${tds[1].innerText}"
     PERFORMER "${performer}"
     INDEX 01 ${theWorld(min)}:${theWorld(sec)}:00
 `
-            min+=Number(tds[2].innerText.split(":")[0]);
-            sec+=Number(tds[2].innerText.split(":")[1]);
+            min+=Number(totext(tds[2]).split(":")[0]);
+            sec+=Number(totext(tds[2]).split(":")[1]);
         }
         createObject(result,i);
     }
-    return;
 }
 function createObject (content,noid) {
     var file = new File([content], `${t1}_DISC${noid}.cue`, { type: "text/plain;charset=utf-8" });
